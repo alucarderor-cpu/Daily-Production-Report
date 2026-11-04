@@ -18,7 +18,7 @@ export const ghSettings = () => {
 
 const toB64 = (str) => { const b = new TextEncoder().encode(str); let s = ''; b.forEach((x) => (s += String.fromCharCode(x))); return btoa(s); };
 const api = (cfg, path, opt = {}) =>
-  fetch(`https://api.github.com/repos/${cfg.repo}/${path}`, { ...opt, headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${cfg.token}`, 'X-GitHub-Api-Version': '2022-11-28', ...(opt.headers || {}) } });
+  fetch(`https://api.github.com/repos/${cfg.repo}${path ? '/' + path : ''}`, { ...opt, headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${cfg.token}`, 'X-GitHub-Api-Version': '2022-11-28', ...(opt.headers || {}) } });
 
 const sendEntry = async (entry) => {
   const cfg = ghSettings();
@@ -156,9 +156,11 @@ export const settingsPage = (root) => {
   $('test').addEventListener('click', async () => {
     const s = read();
     try {
+      if (!/^[\w.-]+\/[\w.-]+$/.test(s.repo)) throw new Error('اسم الريبو لازم يكون بالشكل owner/repo، مثال: alucard/sondos-site');
+      if (!s.token) throw new Error('الصق رمز الوصول الأول.');
       const r = await api(s, '', {});
       const j = await r.json();
-      if (!r.ok) throw new Error(`${r.status}: ${j.message || ''}`);
+      if (!r.ok) throw new Error(r.status === 404 ? 'الريبو مش لاقيه. اتأكد من الاسم (owner/repo) وإن الرمز اتدّى صلاحية على الريبو ده بالذات.' : r.status === 401 ? 'الرمز غلط أو منتهي.' : `${r.status}: ${j.message || ''}`);
       toast(root, j.permissions?.push ? `الاتصال شغال على ${j.full_name} وعندك صلاحية الكتابة.` : `الاتصال شغال لكن الرمز مالوش صلاحية كتابة على ${j.full_name}.`, !j.permissions?.push);
     } catch (e) { toast(root, 'فشل الاتصال: ' + e.message, true); }
   });
