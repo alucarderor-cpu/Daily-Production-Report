@@ -22,10 +22,35 @@ const toRow = (o) => {
   return { key: keyOf(o.iso, o.machine, o.shift), iso: o.iso, s, y, mo: m, machine: o.machine, shift: o.shift, weaver: o.weaver || '', a1: o.a1 || '', a2: o.a2 || '', out: o.out, note: o.note || '', reason: o.reason || '', dt: o.dt || 0, tab: !!o.tab };
 };
 
-export const loadWorkbook = async () => {
+const detectRepo = () => {
+  let st = {};
+  try { st = JSON.parse(localStorage.getItem('sondos_gh') || '{}'); } catch { /* ignore */ }
+  let repo = st.repo || (CONFIG.repo ? `${CONFIG.repo.owner}/${CONFIG.repo.repo}` : '');
+  if (!repo && /\.github\.io$/.test(location.hostname)) {
+    const seg = location.pathname.split('/').filter(Boolean)[0];
+    if (seg) repo = `${location.hostname.split('.')[0]}/${seg}`;
+  }
+  return { repo, token: st.token || '', branch: st.branch || CONFIG.repo?.branch || 'main' };
+};
+
+// بيقرأ الملف من GitHub مباشرة (متحدث فورًا بعد الـ Action)، ولو فشل بيرجع للملف المنشور على الموقع
+const fetchWorkbook = async () => {
+  const g = detectRepo();
+  if (g.repo) {
+    try {
+      const h = { Accept: 'application/vnd.github.raw+json' };
+      if (g.token) h.Authorization = `Bearer ${g.token}`;
+      const r = await fetch(`https://api.github.com/repos/${g.repo}/contents/${CONFIG.dataFile}?ref=${encodeURIComponent(g.branch)}`, { headers: h, cache: 'no-store' });
+      if (r.ok) return await r.arrayBuffer();
+    } catch { /* fall back */ }
+  }
   const res = await fetch(`${CONFIG.dataFile}?v=${Date.now()}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`تعذر تحميل ملف ${CONFIG.dataFile} (${res.status})`);
-  const buf = await res.arrayBuffer();
+  return res.arrayBuffer();
+};
+
+export const loadWorkbook = async () => {
+  const buf = await fetchWorkbook();
   const wb = XLSX.read(buf, { type: 'array', sheets: [LOG_SHEET, LISTS_SHEET], cellFormula: false, cellStyles: false, cellHTML: false, cellNF: false });
   const log = XLSX.utils.sheet_to_json(wb.Sheets[LOG_SHEET], { header: 1, raw: true, defval: null, range: 2 });
   store.base = new Map();

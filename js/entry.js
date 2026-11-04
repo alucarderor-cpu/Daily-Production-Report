@@ -85,6 +85,7 @@ export const entryPage = (root) => {
       toast(root, okMsg + ' هيتضاف للملف تلقائيًا خلال حوالي دقيقة.');
       fill();
       renderRecent();
+      watch();
     } catch (e) { toast(root, e.message, true); }
     $('busy').textContent = '';
     root.querySelectorAll('button').forEach((b) => (b.disabled = false));
@@ -100,6 +101,18 @@ export const entryPage = (root) => {
   $('del').addEventListener('click', () => {
     if (confirm('تمسح الوردية دي من السجل؟')) submit(collect('delete'), 'اتمسحت الوردية.');
   });
+  let timer = null;
+  const watch = () => {
+    clearInterval(timer);
+    let n = 0;
+    timer = setInterval(async () => {
+      if (!root.isConnected || ++n > 45 || !store.pending.size) { clearInterval(timer); if (root.isConnected) { $('busy').textContent = ''; renderRecent(); } return; }
+      $('busy').textContent = 'بانتظار تحديث الملف...';
+      try { await loadWorkbook(); } catch { /* retry */ }
+      renderRecent();
+      if (!store.pending.size) { $('busy').textContent = ''; toast(root, 'الوردية اتضافت لملف الإكسل.'); }
+    }, 8000);
+  };
   const renderRecent = () => {
     const list = [...store.pending.values()];
     $('recent').innerHTML = list.length
@@ -158,7 +171,9 @@ export const settingsPage = (root) => {
     try {
       if (!/^[\w.-]+\/[\w.-]+$/.test(s.repo)) throw new Error('اسم الريبو لازم يكون بالشكل owner/repo، مثال: alucard/sondos-site');
       if (!s.token) throw new Error('الصق رمز الوصول الأول.');
-      const r = await api(s, '', {});
+      try { await fetch('https://api.github.com/zen', { cache: 'no-store' }); }
+      catch { throw new Error('المتصفح مش قادر يوصل لـ api.github.com أصلًا (حتى من غير الرمز). غالبًا إضافة في المتصفح (مانع إعلانات/خصوصية/VPN) أو الشبكة بتحجبه. جرب نافذة Incognito من غير إضافات، أو شبكة تانية.'); }
+      const r = await api(s, '', {}).catch(() => { throw new Error('GitHub متاح لكن طلب الرمز اتمنع. جرب Incognito من غير إضافات.'); });
       const j = await r.json();
       if (!r.ok) throw new Error(r.status === 404 ? 'الريبو مش لاقيه. اتأكد من الاسم (owner/repo) وإن الرمز اتدّى صلاحية على الريبو ده بالذات.' : r.status === 401 ? 'الرمز غلط أو منتهي.' : `${r.status}: ${j.message || ''}`);
       toast(root, j.permissions?.push ? `الاتصال شغال على ${j.full_name} وعندك صلاحية الكتابة.` : `الاتصال شغال لكن الرمز مالوش صلاحية كتابة على ${j.full_name}.`, !j.permissions?.push);
