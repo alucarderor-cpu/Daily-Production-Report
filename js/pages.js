@@ -57,7 +57,7 @@ const daily = (root) => {
       });
       return (
         `<p class="headline">اليوم: <b>${d ? dayName(d) : ''}</b> <i>|</i> إجمالي إنتاج اليوم: <b>${fmt(t.out)}</b> <i>|</i> % كفاءة اليوم: <b>${pct(t.eff)}</b></p>` +
-        kpis([{ l: 'إجمالي إنتاج اليوم', v: fmt(t.out), n: 'قطعة' }, { l: 'الإنتاج المستهدف', v: fmt(t.target), n: 'حسب الورديات المسجلة' }, { l: 'كفاءة اليوم', v: pct(t.eff) }, { l: 'ماكينات شغالة', v: `${list.filter((m) => m.out > 0).length} من ${list.length}` }, { l: 'ورديات فيها عطلة', v: stops.filter((r) => r.reason || r.note || r.dt > 0).length, n: `من ${rows.length} وردية مسجلة` }]) +
+        kpis([{ l: 'إجمالي إنتاج اليوم', v: fmt(t.out), n: 'بنط' }, { l: 'الإنتاج المستهدف', v: fmt(t.target), n: 'حسب الورديات المسجلة' }, { l: 'كفاءة اليوم', v: pct(t.eff) }, { l: 'ماكينات شغالة', v: `${list.filter((m) => m.out > 0).length} من ${list.length}` }, { l: 'ورديات فيها عطلة', v: stops.filter((r) => r.reason || r.note || r.dt > 0).length, n: `من ${rows.length} وردية مسجلة` }]) +
         card('الإنتاج حسب الماكينة', `<div class="chartbox">${machineChart(list)}</div>`) +
         card('إنتاج الماكينات والورديات', table({ head, rows: body, foot })) +
         card('عطلات الماكينات خلال اليوم', table({ head: ['الماكينة', 'الوردية', { t: 'النساج', cls: 'l' }, 'الإنتاج', 'سبب العطلة', { t: 'تفاصيل / ملاحظات', cls: 'l' }, 'مدة التوقف (دقيقة)'], rows: dtRows, empty: 'مفيش ورديات مسجلة في اليوم ده.' }), `${rows.length} وردية مسجلة`) +
