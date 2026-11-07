@@ -1,0 +1,51 @@
+{
+ "designs": [
+  {
+   "code": "M001",
+   "name": "",
+   "notes": "",
+   "colorways": [
+    "بيج * بني",
+    "بيج * كحلي",
+    "بيج * تركواز",
+    "بيج * احمر"
+   ],
+   "orders": [
+    "mw65np8bljpl",
+    "mw65nx4q3klj"
+   ],
+   "updatedAt": "2026-11-07"
+  },
+  {
+   "code": "1002",
+   "name": "",
+   "notes": "",
+   "colorways": [
+    "بيج * بني",
+    "بيج * كحلي",
+    "بيج * تركواز",
+    "بيج * احمر"
+   ],
+   "orders": [
+    "mw65np8bljpl",
+    "mw65nx4q3klj"
+   ],
+   "updatedAt": "2026-11-07"
+  },
+  {
+   "code": "AS010",
+   "name": "",
+   "notes": "",
+   "colorways": [
+    "بيج * بني",
+    "بيج * كحلي",
+    "بيج * تركواز"
+   ],
+   "orders": [
+    "mw65np8bljpl",
+    "mw65nx4q3klj"
+   ],
+   "updatedAt": "2026-11-07"
+  }
+ ]
+}
